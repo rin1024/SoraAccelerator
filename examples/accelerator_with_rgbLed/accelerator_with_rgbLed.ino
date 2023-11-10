@@ -17,7 +17,9 @@ SimpleFade simpleFade;
 
 /////////////// Sensor
 #define SENSOR_ID 1
-uint16_t SENSOR_PINS[3] = {A0, A1, A2};
+#define NUM_SENSORS 3
+
+uint8_t SENSOR_PINS[NUM_SENSORS] = {A0, A1, A2};
 
 SoraAccelerator sensor;
 
@@ -47,7 +49,8 @@ void setup() {
  * 
  */
 void loop() {
-  sensor.update();
+  boolean sensorDebugDump = false;
+  sensor.update(sensorDebugDump);
   if (sensor.isDetected()) {
     double power = sensor.getLastMag();
     int currentBrightness = int(power * 5.0);
