@@ -9,17 +9,18 @@ SoraAccelerator::SoraAccelerator() {
 
   this->changeStatusFlag = false;
 
-  this->ignoreMillis        = SENSOR_IGNORE_MS;
-  this->lastDetectedMillis  = millis() + SENSOR_IGNORE_MS;
+  this->ignoreMillis        = DEFAULT_IGNORE_MILLIS;
+  this->lastDetectedMillis  = millis() + DEFAULT_IGNORE_MILLIS;
 
+  this->numReadings = DEFAULT_NUM_READINGS;
   this->readIndex = 0;
   this->readTotal = 0;
-  this->readQueue = new double[SENSOR_READINGS];//(double*)malloc(sizeof(double) * SENSOR_READINGS);
-  for (uint16_t i=0;i<SENSOR_READINGS;i++) {
+  this->readQueue = new double[this->numReadings];//(double*)malloc(sizeof(double) * this->numReadings);
+  for (uint16_t i=0;i<this->numReadings;i++) {
     this->readQueue[i] = 0;
   }
 
-  this->threashold = SENSOR_THREASHOLD;
+  this->threashold = DEFAULT_THREASHOLD;
 }
 
 /**
@@ -36,7 +37,7 @@ void SoraAccelerator::init(uint16_t id, uint16_t *pins) {
 /**
  * アップデート関数 : ここでセンサの値を更新したり、検知したりする
  */
-void SoraAccelerator::update(boolean debugDump) {
+void SoraAccelerator::update(bool debugDump) {
   double v[NUM_SENSORS];
   for (uint16_t i=0;i<NUM_SENSORS;i++) {
     v[i] = analogRead(this->sensorPins[i]);
@@ -48,11 +49,11 @@ void SoraAccelerator::update(boolean debugDump) {
   this->readTotal -= readQueue[this->readIndex];
   readQueue[this->readIndex] = mag;
   this->readTotal += readQueue[this->readIndex];
-  mag -= this->readTotal / (double)SENSOR_READINGS;
+  mag -= this->readTotal / (double)this->numReadings;
   this->readIndex++;
 
   // タッチを検出
-  if (this->readIndex >= SENSOR_READINGS) {
+  if (this->readIndex >= this->numReadings) {
     // デバッグ表示する場合
     if (debugDump == true) {
       Serial.print(this->sensorStatus == SENSOR_DETECTED ? "*" : " ");
@@ -99,8 +100,8 @@ void SoraAccelerator::update(boolean debugDump) {
 /**
  *
  */
-boolean SoraAccelerator::isDetected() {
-  boolean result = false;
+bool SoraAccelerator::isDetected() {
+  bool result = false;
   if (this->changeStatusFlag == true && this->sensorStatus == SENSOR_DETECTED) {
     this->changeStatusFlag = false;
     result = true;

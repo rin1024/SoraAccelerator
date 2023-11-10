@@ -15,9 +15,9 @@
 #define SENSOR_NOT_DETECTED       0
 #define SENSOR_DETECTED           1
 
-#define SENSOR_READINGS          50
-#define SENSOR_IGNORE_MS       1200
-#define SENSOR_THREASHOLD      20.0
+#define DEFAULT_NUM_READINGS          50
+#define DEFAULT_IGNORE_MILLIS       1200
+#define DEFAULT_THREASHOLD      20.0
 
 #define SEPARATOR "\t"
 #define NUM_SENSORS 3
@@ -29,8 +29,8 @@ class SoraAccelerator {
   public:
     SoraAccelerator();
     void init(uint16_t id, uint16_t *pins);
-    void update(boolean debugDump = false);
-    boolean isDetected();
+    void update(bool debugDump = false);
+    bool isDetected();
 
     void setIgnoreMillis(uint32_t _ignoreMs);
     void setThreashold(double _threashold);
@@ -46,15 +46,16 @@ class SoraAccelerator {
     uint16_t lastSensorStatus;
     double lastMag;            // 最後のMag
 
-    boolean changeStatusFlag;    // sensorStatusが変わった場合trueに
+    bool changeStatusFlag;    // sensorStatusが変わった場合trueに
 
     uint32_t ignoreMillis;        // 検知されてから無視するまでの時間
     uint32_t lastDetectedMillis;  // 最後に検知された時間
 
-    int16_t readIndex;          // 現在のセンシング回数
+    uint16_t readIndex;          // 現在のセンシング回数
     double readTotal;           // センサの合計値
     double *readQueue; // センサの値一次保持変数
 
+    uint16_t numReadings;          // センサのスムージングをする回数
     double threashold;          // Magの閾値
 
     uint16_t sensorPins[NUM_SENSORS];     // センサが接続されているピン
