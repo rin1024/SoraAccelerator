@@ -12,24 +12,20 @@ SoraAccelerator::SoraAccelerator() {
   this->ignoreMillis        = DEFAULT_IGNORE_MILLIS;
   this->lastDetectedMillis  = millis() + DEFAULT_IGNORE_MILLIS;
 
-  this->numReadings = DEFAULT_NUM_READINGS;
-  this->readIndex = 0;
-  this->readTotal = 0;
-  this->readQueue = new double[this->numReadings];//(double*)malloc(sizeof(double) * this->numReadings);
-  for (uint16_t i=0;i<this->numReadings;i++) {
-    this->readQueue[i] = 0;
-  }
+  this->setNumReadings(DEFAULT_NUM_READINGS);
 
   this->threashold = DEFAULT_THREASHOLD;
+  this->numSensors = DEFAULT_NUM_SENSORS;
 }
 
 /**
  * 初期化
  */
-void SoraAccelerator::init(uint16_t id, uint16_t *pins) {
+void SoraAccelerator::init(uint16_t id, uint8_t *pins) {
   this->sensorId = id;
+  this->numSensors = sizeof(pins);
 
-  for (uint16_t i=0;i<NUM_SENSORS;i++) {
+  for (uint8_t i=0;i<this->numSensors;i++) {
     this->sensorPins[i] = pins[i];
   }
 }
@@ -38,12 +34,14 @@ void SoraAccelerator::init(uint16_t id, uint16_t *pins) {
  * アップデート関数 : ここでセンサの値を更新したり、検知したりする
  */
 void SoraAccelerator::update(bool debugDump) {
-  double v[NUM_SENSORS];
-  for (uint16_t i=0;i<NUM_SENSORS;i++) {
-    v[i] = analogRead(this->sensorPins[i]);
+  double sensorValues[this->numSensors] = {};
+  double totalSensorValue = 0.0;
+  for (uint8_t i=0;i<this->numSensors;i++) {
+    sensorValues[i] = analogRead(this->sensorPins[i]);
+    totalSensorValue += sensorValues[i] * sensorValues[i];
   }
 
-  double mag = sqrt(v[0] * v[0] + v[1] * v[1] + v[2] * v[2]);
+  double mag= sqrt(totalSensorValue);
 
   // high pass filter
   this->readTotal -= readQueue[this->readIndex];
@@ -56,20 +54,18 @@ void SoraAccelerator::update(bool debugDump) {
   if (this->readIndex >= this->numReadings) {
     // デバッグ表示する場合
     if (debugDump == true) {
-      Serial.print(this->sensorStatus == SENSOR_DETECTED ? "*" : " ");
+      Serial.print(this->sensorStatus == SENSOR_DETECTED ? F("*") : F(" "));
       Serial.print(SEPARATOR);
-      Serial.print(v[0]);
-      Serial.print(SEPARATOR);
-      Serial.print(v[1]);
-      Serial.print(SEPARATOR);
-      Serial.print(v[2]);
-      Serial.print(SEPARATOR);
+      for (uint8_t i=0;i<this->numSensors;i++) {
+        Serial.print(sensorValues[i]);
+        Serial.print(SEPARATOR);
+      }
       Serial.print(this->readTotal);
       Serial.print(SEPARATOR);
       Serial.print(mag);
       if (mag > this->threashold) {
         Serial.print(SEPARATOR);
-        Serial.print(" ... detected");
+        Serial.print(F(" ... detected"));
       }
       Serial.println();
     }
@@ -112,8 +108,27 @@ bool SoraAccelerator::isDetected() {
 /**
  *
  */
-void SoraAccelerator::setIgnoreMillis(uint32_t _ignoreMs) {
-  this->ignoreMillis = _ignoreMs;
+void SoraAccelerator::setNumReadings(uint16_t _numReadings) {
+  this->numReadings = _numReadings;
+
+  // readingsの数を減らした際の対応
+  if (this->readIndex >= this->numReadings - 1) {
+    this->readIndex = this->numReadings - 1;
+  }
+
+  this->readIndex = 0;
+  this->readTotal = 0;
+  this->readQueue = new double[this->numReadings];
+  for (uint16_t i=0;i<this->numReadings;i++) {
+    this->readQueue[i] = 0;
+  }
+}
+
+/**
+ *
+ */
+void SoraAccelerator::setIgnoreMillis(uint32_t _ignoreMillis) {
+  this->ignoreMillis = _ignoreMillis;
 }
 
 /**

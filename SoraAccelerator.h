@@ -12,15 +12,15 @@
 
 //////////////////////////////////////////////////////////////////////////////////////////
 // 定数郡
-#define SENSOR_NOT_DETECTED       0
-#define SENSOR_DETECTED           1
+#define SENSOR_NOT_DETECTED            0
+#define SENSOR_DETECTED                1
 
 #define DEFAULT_NUM_READINGS          50
 #define DEFAULT_IGNORE_MILLIS       1200
-#define DEFAULT_THREASHOLD      20.0
+#define DEFAULT_THREASHOLD          20.0
+#define DEFAULT_NUM_SENSORS            3
 
-#define SEPARATOR "\t"
-#define NUM_SENSORS 3
+#define SEPARATOR                   "\t"
 
 /**************************************************************************************
  * SoraAccelerator : 加速度センサ(X,Y,Z軸の値を直にもらうやつ)
@@ -28,10 +28,11 @@
 class SoraAccelerator {
   public:
     SoraAccelerator();
-    void init(uint16_t id, uint16_t *pins);
+    void init(uint16_t id, uint8_t *pins);
     void update(bool debugDump = false);
     bool isDetected();
 
+    void setNumReadings(uint16_t _numReadings);
     void setIgnoreMillis(uint32_t _ignoreMs);
     void setThreashold(double _threashold);
 
@@ -44,6 +45,8 @@ class SoraAccelerator {
     uint16_t sensorId;           // センサのID
     uint16_t sensorStatus;        // センサの状態
     uint16_t lastSensorStatus;
+    uint8_t numSensors;
+
     double lastMag;            // 最後のMag
 
     bool changeStatusFlag;    // sensorStatusが変わった場合trueに
@@ -58,7 +61,7 @@ class SoraAccelerator {
     uint16_t numReadings;          // センサのスムージングをする回数
     double threashold;          // Magの閾値
 
-    uint16_t sensorPins[NUM_SENSORS];     // センサが接続されているピン
+    uint16_t *sensorPins;     // センサが接続されているピン
 };
 
 #endif
