@@ -10,17 +10,21 @@
 #include "WProgram.h"
 #endif
 
-//////////////////////////////////////////////////////////////////////////////////////////
-// 定数郡
-#define SENSOR_NOT_DETECTED            0
-#define SENSOR_DETECTED                1
+/*******************************************
+   const
+ *******************************************/
+#define SA_DEBUG_TYPE_NONE                0
+#define SA_DEBUG_TYPE_PRINT               1
 
-#define DEFAULT_NUM_READINGS          50
-#define DEFAULT_IGNORE_MILLIS       1200
-#define DEFAULT_THREASHOLD          20.0
-#define DEFAULT_NUM_SENSORS            3
+#define SA_SENSOR_NOT_DETECTED            0
+#define SA_SENSOR_DETECTED                1
 
-#define SEPARATOR                   "\t"
+#define SA_DEFAULT_NUM_READINGS          50
+#define SA_DEFAULT_IGNORE_MILLIS       1200
+#define SA_DEFAULT_THREASHOLD          20.0
+#define SA_DEFAULT_NUM_SENSORS            3
+
+#define SA_SEPARATOR                   "\t"
 
 /**************************************************************************************
  * SoraAccelerator : 加速度センサ(X,Y,Z軸の値を直にもらうやつ)
@@ -29,8 +33,11 @@ class SoraAccelerator {
   public:
     SoraAccelerator();
     void init(uint16_t id, uint8_t *pins);
-    void update(bool debugDump = false);
+    void update();
     bool isDetected();
+
+    void enableDebug(uint8_t _debugType);
+    void disableDebug();
 
     void setNumReadings(uint16_t _numReadings);
     void setIgnoreMillis(uint32_t _ignoreMs);
@@ -62,6 +69,8 @@ class SoraAccelerator {
     double threashold;          // Magの閾値
 
     uint16_t *sensorPins;     // センサが接続されているピン
+
+    uint8_t debugType;
 };
 
 #endif

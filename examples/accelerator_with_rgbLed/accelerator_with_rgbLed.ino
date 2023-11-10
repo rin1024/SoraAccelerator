@@ -39,6 +39,7 @@ void setup() {
 
   sensor.init(SENSOR_ID, SENSOR_PINS);
   sensor.setIgnoreMillis(50);
+  sensor.enableDebug(SA_DEBUG_TYPE_PRINT);
 
   analogWrite(R_PIN, 0);
   analogWrite(G_PIN, 0);
@@ -49,8 +50,7 @@ void setup() {
  * 
  */
 void loop() {
-  boolean sensorDebugDump = false;
-  sensor.update(sensorDebugDump);
+  sensor.update();
   if (sensor.isDetected()) {
     double power = sensor.getLastMag();
     int currentBrightness = int(power * 5.0);
@@ -62,7 +62,7 @@ void loop() {
 
     simpleFade.setup(targetBrightness, durationMillis);
     simpleFade.setCurrentValue(currentBrightness);
-    simpleFade.enableDebug(DEBUG_TYPE_PRINT);
+    simpleFade.enableDebug(SF_DEBUG_TYPE_PRINT);
     simpleFade.start();
 
     Serial.print(currentBrightness);

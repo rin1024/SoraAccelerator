@@ -8,7 +8,9 @@
 
 /////////////// Sensor
 #define SENSOR_ID 1
-uint16_t SENSOR_PINS[3] = {A0, A1, A2};
+#define NUM_SENSORS 3
+
+uint8_t SENSOR_PINS[NUM_SENSORS] = {A0, A1, A2};
 
 SoraAccelerator sensor;
 
@@ -27,6 +29,7 @@ void setup() {
   Serial.println(__M_FILENAME__);
 
   sensor.init(SENSOR_ID, SENSOR_PINS);
+  //sensor.enableDebug(SA_DEBUG_TYPE_PRINT);
 }
 
 /**

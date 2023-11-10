@@ -4,18 +4,18 @@
  * コンストラクタ
  */
 SoraAccelerator::SoraAccelerator() {
-  this->sensorStatus = SENSOR_NOT_DETECTED;
-  this->lastSensorStatus = SENSOR_NOT_DETECTED;
+  this->sensorStatus = SA_SENSOR_NOT_DETECTED;
+  this->lastSensorStatus = SA_SENSOR_NOT_DETECTED;
 
   this->changeStatusFlag = false;
 
-  this->ignoreMillis        = DEFAULT_IGNORE_MILLIS;
-  this->lastDetectedMillis  = millis() + DEFAULT_IGNORE_MILLIS;
+  this->ignoreMillis        = SA_DEFAULT_IGNORE_MILLIS;
+  this->lastDetectedMillis  = millis() + SA_DEFAULT_IGNORE_MILLIS;
 
-  this->setNumReadings(DEFAULT_NUM_READINGS);
+  this->setNumReadings(SA_DEFAULT_NUM_READINGS);
 
-  this->threashold = DEFAULT_THREASHOLD;
-  this->numSensors = DEFAULT_NUM_SENSORS;
+  this->threashold = SA_DEFAULT_THREASHOLD;
+  this->numSensors = SA_DEFAULT_NUM_SENSORS;
 }
 
 /**
@@ -33,7 +33,7 @@ void SoraAccelerator::init(uint16_t id, uint8_t *pins) {
 /**
  * アップデート関数 : ここでセンサの値を更新したり、検知したりする
  */
-void SoraAccelerator::update(bool debugDump) {
+void SoraAccelerator::update() {
   double sensorValues[this->numSensors] = {};
   double totalSensorValue = 0.0;
   for (uint8_t i=0;i<this->numSensors;i++) {
@@ -41,7 +41,7 @@ void SoraAccelerator::update(bool debugDump) {
     totalSensorValue += sensorValues[i] * sensorValues[i];
   }
 
-  double mag= sqrt(totalSensorValue);
+  double mag = sqrt(totalSensorValue);
 
   // high pass filter
   this->readTotal -= readQueue[this->readIndex];
@@ -52,19 +52,18 @@ void SoraAccelerator::update(bool debugDump) {
 
   // タッチを検出
   if (this->readIndex >= this->numReadings) {
-    // デバッグ表示する場合
-    if (debugDump == true) {
-      Serial.print(this->sensorStatus == SENSOR_DETECTED ? F("*") : F(" "));
-      Serial.print(SEPARATOR);
+    if (debugType == SA_DEBUG_TYPE_PRINT) {
+      Serial.print(this->sensorStatus == SA_SENSOR_DETECTED ? F("*") : F(" "));
+      Serial.print(SA_SEPARATOR);
       for (uint8_t i=0;i<this->numSensors;i++) {
         Serial.print(sensorValues[i]);
-        Serial.print(SEPARATOR);
+        Serial.print(SA_SEPARATOR);
       }
       Serial.print(this->readTotal);
-      Serial.print(SEPARATOR);
+      Serial.print(SA_SEPARATOR);
       Serial.print(mag);
       if (mag > this->threashold) {
-        Serial.print(SEPARATOR);
+        Serial.print(SA_SEPARATOR);
         Serial.print(F(" ... detected"));
       }
       Serial.println();
@@ -72,13 +71,13 @@ void SoraAccelerator::update(bool debugDump) {
 
     // しきい値を越えた場合
     if (mag > this->threashold) {
-      this->sensorStatus = SENSOR_DETECTED;
+      this->sensorStatus = SA_SENSOR_DETECTED;
 
       this->lastDetectedMillis = millis();
     }
     // センサが閾値以下で、さらに最後にdetectしてから暫くたっている場合
     else if (millis() - this->lastDetectedMillis > this->ignoreMillis) {
-      this->sensorStatus = SENSOR_NOT_DETECTED;
+      this->sensorStatus = SA_SENSOR_NOT_DETECTED;
     }
 
     // 状態が変化した場合
@@ -98,11 +97,25 @@ void SoraAccelerator::update(bool debugDump) {
  */
 bool SoraAccelerator::isDetected() {
   bool result = false;
-  if (this->changeStatusFlag == true && this->sensorStatus == SENSOR_DETECTED) {
+  if (this->changeStatusFlag == true && this->sensorStatus == SA_SENSOR_DETECTED) {
     this->changeStatusFlag = false;
     result = true;
   }
   return result;
+}
+
+/**
+   デバッグ表示を有効化
+*/
+void SoraAccelerator::enableDebug(uint8_t _debugType) {
+  debugType = _debugType;
+}
+
+/**
+   デバッグ表示を無効化
+*/
+void SoraAccelerator::disableDebug() {
+  debugType = SA_DEBUG_TYPE_NONE;
 }
 
 /**
