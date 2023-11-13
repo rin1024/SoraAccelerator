@@ -19,12 +19,24 @@ SoraAccelerator::SoraAccelerator() {
 }
 
 /**
+ * デストラクタ
+ */
+SoraAccelerator::~SoraAccelerator() {
+  delete[] readQueue;
+  delete[] sensorPins;
+}
+
+/**
  * 初期化
  */
 void SoraAccelerator::init(uint16_t id, uint8_t *pins) {
   this->sensorId = id;
   this->numSensors = sizeof(pins);
 
+  if (this->sensorPins != NULL) {
+    delete[] this->sensorPins;
+  }
+  this->sensorPins = new uint16_t[this->numSensors];
   for (uint8_t i=0;i<this->numSensors;i++) {
     this->sensorPins[i] = pins[i];
   }
@@ -131,6 +143,10 @@ void SoraAccelerator::setNumReadings(uint16_t _numReadings) {
 
   this->readIndex = 0;
   this->readTotal = 0;
+  
+  if (readQueue != NULL) {
+    delete[] readQueue;
+  }
   this->readQueue = new double[this->numReadings];
   for (uint16_t i=0;i<this->numReadings;i++) {
     this->readQueue[i] = 0;

@@ -32,6 +32,8 @@
 class SoraAccelerator {
   public:
     SoraAccelerator();
+    ~SoraAccelerator();
+    
     void init(uint16_t id, uint8_t *pins);
     void update();
     bool isDetected();
