@@ -62,7 +62,7 @@ class SoraAccelerator {
     
     // センサの設定に関するパラメータ
     uint8_t numSensors; // センサの総数
-    uint16_t *sensorPins;     // センサが接続されているピン
+    uint8_t *sensorPins;     // センサが接続されているピン
 
     // 無効化する時間に関するパラメータ
     uint32_t ignoreMillis;        // 検知されてから無視するまでの時間
@@ -77,6 +77,7 @@ class SoraAccelerator {
     // タッチ判定に関するパラメータ
     double threashold;          // Magの閾値
     double lastMag;            // 最後のMag
+    uint16_t *lastSensorValues;
 };
 
 #endif

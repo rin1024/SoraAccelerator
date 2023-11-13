@@ -23,6 +23,7 @@ SoraAccelerator::SoraAccelerator() {
 SoraAccelerator::~SoraAccelerator() {
   delete[] readQueue;
   delete[] sensorPins;
+  delete[] lastSensorValues;
 }
 
 /**
@@ -34,10 +35,13 @@ void SoraAccelerator::init(uint16_t id, uint8_t _numSensors, uint8_t *pins) {
 
   if (this->sensorPins != NULL) {
     delete[] this->sensorPins;
+    delete[] this->lastSensorValues;
   }
-  this->sensorPins = new uint16_t[this->numSensors];
+  this->sensorPins = new uint8_t[this->numSensors];
+  this->lastSensorValues = new uint16_t[this->numSensors];
   for (uint8_t i=0;i<this->numSensors;i++) {
     this->sensorPins[i] = pins[i];
+    this->lastSensorValues[i] = 0;
   }
 }
 
@@ -45,13 +49,15 @@ void SoraAccelerator::init(uint16_t id, uint8_t _numSensors, uint8_t *pins) {
  * アップデート関数 : ここでセンサの値を更新したり、検知したりする
  */
 void SoraAccelerator::update() {
-  double sensorValues[this->numSensors] = {};
-  double totalSensorValue = 0.0;
+  uint16_t sensorValues[this->numSensors] = {};
   for (uint8_t i=0;i<this->numSensors;i++) {
     sensorValues[i] = analogRead(this->sensorPins[i]);
-    totalSensorValue += sensorValues[i] * sensorValues[i];
   }
 
+  double totalSensorValue = 0.0;
+  for (uint8_t i=0;i<this->numSensors;i++) {
+    totalSensorValue += (double)sensorValues[i] * (double)sensorValues[i];
+  }
   double mag = sqrt(totalSensorValue);
 
   // high pass filter
@@ -89,8 +95,9 @@ void SoraAccelerator::update() {
 
       this->lastDetectedMillis = millis();
     }
-    // センサが閾値以下で、さらに最後にdetectしてから暫くたっている場合
-    else if (millis() - this->lastDetectedMillis > this->ignoreMillis) {
+    
+    // 最後にdetectしてから暫くたっている場合
+    if (this->lastDetectedMillis > 0 && millis() - this->lastDetectedMillis > this->ignoreMillis) {
       this->sensorStatus = SA_SENSOR_NOT_DETECTED;
     }
 
@@ -104,10 +111,14 @@ void SoraAccelerator::update() {
     this->lastMag = mag;
     this->readIndex = 0;
   }
+
+  for (uint8_t i=0;i<this->numSensors;i++) {
+    this->lastSensorValues[i] = sensorValues[i];
+  }
 }
 
 /**
- *
+ * NOTE: isDetectedがtrueになるのは、sensorStatusがSA_SENSOR_DETECTEDになって一度のみ
  */
 bool SoraAccelerator::isDetected() {
   bool result = false;
@@ -137,11 +148,6 @@ void SoraAccelerator::disableDebug() {
  */
 void SoraAccelerator::setNumReadings(uint16_t _numReadings) {
   this->numReadings = _numReadings;
-
-  // readingsの数を減らした際の対応
-  if (this->readIndex >= this->numReadings - 1) {
-    this->readIndex = this->numReadings - 1;
-  }
 
   this->readIndex = 0;
   this->readTotal = 0;
@@ -174,7 +180,6 @@ void SoraAccelerator::setThreashold(double _threashold) {
  */
 uint16_t SoraAccelerator::getSensorId() {
   return sensorId;
-
 }
 
 /**
@@ -184,7 +189,6 @@ uint16_t SoraAccelerator::getSensorId() {
  */
 uint16_t SoraAccelerator::getSensorStatus() {
   return sensorStatus;
-
 }
 
 /**
@@ -192,7 +196,6 @@ uint16_t SoraAccelerator::getSensorStatus() {
  */
 uint16_t SoraAccelerator::getLastSensorStatus() {
   return lastSensorStatus;
-
 }
 
 /**
