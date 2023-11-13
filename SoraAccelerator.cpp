@@ -6,7 +6,6 @@
 SoraAccelerator::SoraAccelerator() {
   this->sensorStatus = SA_SENSOR_NOT_DETECTED;
   this->lastSensorStatus = SA_SENSOR_NOT_DETECTED;
-
   this->changeStatusFlag = false;
 
   this->ignoreMillis        = SA_DEFAULT_IGNORE_MILLIS;
@@ -170,7 +169,7 @@ void SoraAccelerator::setThreashold(double _threashold) {
 /**
  *
  */
-uint16_t SoraAccelerator::getSensorID() {
+uint16_t SoraAccelerator::getSensorId() {
   return sensorId;
 
 }

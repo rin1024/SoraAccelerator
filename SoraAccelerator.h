@@ -51,28 +51,32 @@ class SoraAccelerator {
     double getLastMag();
 
   private:
+    // 基本設定
     uint16_t sensorId;           // センサのID
+    uint8_t debugType; // デバッグの種類
+    
+    // センサの状態に関するパラメータ
     uint16_t sensorStatus;        // センサの状態
     uint16_t lastSensorStatus;
-    uint8_t numSensors;
-
-    double lastMag;            // 最後のMag
-
     bool changeStatusFlag;    // sensorStatusが変わった場合trueに
+    
+    // センサの設定に関するパラメータ
+    uint8_t numSensors; // センサの総数
+    uint16_t *sensorPins;     // センサが接続されているピン
 
+    // 無効化する時間に関するパラメータ
     uint32_t ignoreMillis;        // 検知されてから無視するまでの時間
     uint32_t lastDetectedMillis;  // 最後に検知された時間
 
+    // センサのスムージングに関するパラメータ
     uint16_t readIndex;          // 現在のセンシング回数
     double readTotal;           // センサの合計値
     double *readQueue; // センサの値一次保持変数
-
     uint16_t numReadings;          // センサのスムージングをする回数
+    
+    // タッチ判定に関するパラメータ
     double threashold;          // Magの閾値
-
-    uint16_t *sensorPins;     // センサが接続されているピン
-
-    uint8_t debugType;
+    double lastMag;            // 最後のMag
 };
 
 #endif
