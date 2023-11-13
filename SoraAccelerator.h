@@ -19,8 +19,8 @@
 #define SA_SENSOR_NOT_DETECTED            0
 #define SA_SENSOR_DETECTED                1
 
-#define SA_DEFAULT_NUM_READINGS          50
-#define SA_DEFAULT_IGNORE_MILLIS       1200
+#define SA_DEFAULT_NUM_READINGS          10
+#define SA_DEFAULT_IGNORE_MILLIS       1000
 #define SA_DEFAULT_THREASHOLD          20.0
 #define SA_DEFAULT_NUM_SENSORS            3
 
@@ -34,7 +34,7 @@ class SoraAccelerator {
     SoraAccelerator();
     ~SoraAccelerator();
     
-    void init(uint16_t id, uint8_t *pins);
+    void init(uint16_t id, uint8_t _numSensors, uint8_t *pins);
     void update();
     bool isDetected();
 
@@ -45,7 +45,7 @@ class SoraAccelerator {
     void setIgnoreMillis(uint32_t _ignoreMs);
     void setThreashold(double _threashold);
 
-    uint16_t getSensorID();
+    uint16_t getSensorId();
     uint16_t getSensorStatus();
     uint16_t getLastSensorStatus();
     double getLastMag();

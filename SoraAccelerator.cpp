@@ -28,9 +28,9 @@ SoraAccelerator::~SoraAccelerator() {
 /**
  * 初期化
  */
-void SoraAccelerator::init(uint16_t id, uint8_t *pins) {
+void SoraAccelerator::init(uint16_t id, uint8_t _numSensors, uint8_t *pins) {
   this->sensorId = id;
-  this->numSensors = sizeof(pins);
+  this->numSensors = _numSensors;
 
   if (this->sensorPins != NULL) {
     delete[] this->sensorPins;
@@ -64,7 +64,7 @@ void SoraAccelerator::update() {
   // タッチを検出
   if (this->readIndex >= this->numReadings) {
     if (debugType == SA_DEBUG_TYPE_PRINT) {
-      Serial.print(this->sensorStatus == SA_SENSOR_DETECTED ? F("*") : F(" "));
+      Serial.print(this->sensorStatus == SA_SENSOR_DETECTED ? F("1024") : F("0"));
       Serial.print(SA_SEPARATOR);
       for (uint8_t i=0;i<this->numSensors;i++) {
         Serial.print(sensorValues[i]);
@@ -73,9 +73,12 @@ void SoraAccelerator::update() {
       Serial.print(this->readTotal);
       Serial.print(SA_SEPARATOR);
       Serial.print(mag);
+      Serial.print(SA_SEPARATOR);
       if (mag > this->threashold) {
-        Serial.print(SA_SEPARATOR);
-        Serial.print(F(" ... detected"));
+        Serial.print(F("1024"));
+      }
+      else {
+        Serial.print(F("0"));
       }
       Serial.println();
     }
@@ -130,7 +133,7 @@ void SoraAccelerator::disableDebug() {
 }
 
 /**
- *
+ * センサのスムージングする回数をセット、その関連変数の初期化も行う
  */
 void SoraAccelerator::setNumReadings(uint16_t _numReadings) {
   this->numReadings = _numReadings;
@@ -153,21 +156,21 @@ void SoraAccelerator::setNumReadings(uint16_t _numReadings) {
 }
 
 /**
- *
+ * 一度detectしてから無視するミリ秒数をセット
  */
 void SoraAccelerator::setIgnoreMillis(uint32_t _ignoreMillis) {
   this->ignoreMillis = _ignoreMillis;
 }
 
 /**
- *
+ * detect判定する閾値
  */
 void SoraAccelerator::setThreashold(double _threashold) {
   this->threashold = _threashold;
 }
 
 /**
- *
+ * センサIDを取得
  */
 uint16_t SoraAccelerator::getSensorId() {
   return sensorId;
@@ -175,7 +178,9 @@ uint16_t SoraAccelerator::getSensorId() {
 }
 
 /**
+ * センサの状態を取得
  *
+ * @return SA_SENSOR_DETECTED or SA_SENSOR_NOT_DETECTED
  */
 uint16_t SoraAccelerator::getSensorStatus() {
   return sensorStatus;
@@ -183,7 +188,7 @@ uint16_t SoraAccelerator::getSensorStatus() {
 }
 
 /**
- *
+ * 前回のセンサの状態を取得
  */
 uint16_t SoraAccelerator::getLastSensorStatus() {
   return lastSensorStatus;
@@ -191,7 +196,7 @@ uint16_t SoraAccelerator::getLastSensorStatus() {
 }
 
 /**
- *
+ * 直近のmagを取得
  */
 double SoraAccelerator::getLastMag() {
   return lastMag;
