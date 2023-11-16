@@ -16,6 +16,11 @@
 #define SA_DEBUG_TYPE_NONE                0
 #define SA_DEBUG_TYPE_PRINT               1
 
+#define SA_DETECT_TYPE_MAGNITUDE           0
+#define SA_DETECT_TYPE_ACCEL               1
+#define SA_DETECT_TYPE_DIFF                2
+#define SA_DETECT_TYPE_AVERAGE             3
+
 #define SA_SENSOR_NOT_DETECTED            0
 #define SA_SENSOR_DETECTED                1
 
@@ -27,21 +32,23 @@
 #define SA_SEPARATOR                   "\t"
 
 /**************************************************************************************
- * SoraAccelerator : 加速度センサ(X,Y,Z軸の値を直にもらうやつ)
+ * SoraAccelerator : 加速度センサ等
  **************************************************************************************/
 class SoraAccelerator {
   public:
     SoraAccelerator();
     ~SoraAccelerator();
     
-    void init(uint16_t id, uint8_t _numSensors, uint8_t *pins);
+    void init(uint16_t _id, uint8_t _numSensors, uint8_t *_pins);
     void update();
     bool isDetected();
 
     void enableDebug(uint8_t _debugType);
     void disableDebug();
 
+    void setDetectType(uint8_t _detectType);
     void setNumReadings(uint16_t _numReadings);
+    void setSensors(uint8_t _numSensors, uint8_t *_pins);
     void setIgnoreMillis(uint32_t _ignoreMs);
     void setThreashold(double _threashold);
 
@@ -54,6 +61,7 @@ class SoraAccelerator {
     // 基本設定
     uint16_t sensorId;           // センサのID
     uint8_t debugType; // デバッグの種類
+    uint8_t detectType; // タッチの検出方法
     
     // センサの状態に関するパラメータ
     uint16_t sensorStatus;        // センサの状態

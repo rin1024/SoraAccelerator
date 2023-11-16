@@ -4,17 +4,27 @@
  * コンストラクタ
  */
 SoraAccelerator::SoraAccelerator() {
+  this->sensorId = -1;
+  this->debugType = SA_DEBUG_TYPE_NONE;
+  this->detectType = SA_DETECT_TYPE_MAGNITUDE;
+
   this->sensorStatus = SA_SENSOR_NOT_DETECTED;
   this->lastSensorStatus = SA_SENSOR_NOT_DETECTED;
   this->changeStatusFlag = false;
 
-  this->ignoreMillis        = SA_DEFAULT_IGNORE_MILLIS;
-  this->lastDetectedMillis  = millis() + SA_DEFAULT_IGNORE_MILLIS;
+  uint8_t defaultSensorPins[SA_DEFAULT_NUM_SENSORS] = {};
+  for (uint8_t i=0;i<SA_DEFAULT_NUM_SENSORS;i++) {
+    defaultSensorPins[i] = i;
+  }
+  this->setSensors(SA_DEFAULT_NUM_SENSORS, defaultSensorPins);
+
+  this->ignoreMillis = SA_DEFAULT_IGNORE_MILLIS;
+  this->lastDetectedMillis = millis() + SA_DEFAULT_IGNORE_MILLIS;
 
   this->setNumReadings(SA_DEFAULT_NUM_READINGS);
 
   this->threashold = SA_DEFAULT_THREASHOLD;
-  this->numSensors = SA_DEFAULT_NUM_SENSORS;
+  this->lastMag = 0.0;
 }
 
 /**
@@ -29,20 +39,9 @@ SoraAccelerator::~SoraAccelerator() {
 /**
  * 初期化
  */
-void SoraAccelerator::init(uint16_t id, uint8_t _numSensors, uint8_t *pins) {
+void SoraAccelerator::init(uint16_t id, uint8_t _numSensors, uint8_t *_pins) {
   this->sensorId = id;
-  this->numSensors = _numSensors;
-
-  if (this->sensorPins != NULL) {
-    delete[] this->sensorPins;
-    delete[] this->lastSensorValues;
-  }
-  this->sensorPins = new uint8_t[this->numSensors];
-  this->lastSensorValues = new uint16_t[this->numSensors];
-  for (uint8_t i=0;i<this->numSensors;i++) {
-    this->sensorPins[i] = pins[i];
-    this->lastSensorValues[i] = 0;
-  }
+  this->setSensors(_numSensors, _pins);
 }
 
 /**
@@ -144,6 +143,13 @@ void SoraAccelerator::disableDebug() {
 }
 
 /**
+   検出方法をセット
+*/
+void SoraAccelerator::setDetectType(uint8_t _detectType) {
+  detectType = _detectType;
+}
+
+/**
  * センサのスムージングする回数をセット、その関連変数の初期化も行う
  */
 void SoraAccelerator::setNumReadings(uint16_t _numReadings) {
@@ -158,6 +164,24 @@ void SoraAccelerator::setNumReadings(uint16_t _numReadings) {
   this->readQueue = new double[this->numReadings];
   for (uint16_t i=0;i<this->numReadings;i++) {
     this->readQueue[i] = 0;
+  }
+}
+
+/**
+ * センサーのピンや配列の初期化
+ */
+void SoraAccelerator::setSensors(uint8_t _numSensors, uint8_t *_pins) {
+  this->numSensors = _numSensors;
+
+  if (this->sensorPins != NULL) {
+    delete[] this->sensorPins;
+    delete[] this->lastSensorValues;
+  }
+  this->sensorPins = new uint8_t[this->numSensors];
+  this->lastSensorValues = new uint16_t[this->numSensors];
+  for (uint8_t i=0;i<this->numSensors;i++) {
+    this->sensorPins[i] = _pins[i];
+    this->lastSensorValues[i] = 0;
   }
 }
 
